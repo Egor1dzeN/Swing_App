@@ -1,6 +1,5 @@
 package com.mycompany.mavenproject1.Watchs;
 
-import jakarta.persistence.*;
 
 public class WatchHM extends Watch implements Time{
     private int hour;

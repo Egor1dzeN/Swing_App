@@ -4,20 +4,29 @@
  */
 package com.mycompany.mavenproject1;
 
+import com.mycompany.mavenproject1.Entity.TypeWatch;
+import com.mycompany.mavenproject1.Entity.WatchTable;
 import com.mycompany.mavenproject1.Models.Model;
-import com.mycompany.mavenproject1.TableConfig.ButtonEditor;
-import com.mycompany.mavenproject1.TableConfig.ButtonRenderer;
+import com.mycompany.mavenproject1.Service.HibernateUtil;
+import com.mycompany.mavenproject1.Service.TableRepository;
 import com.mycompany.mavenproject1.Watchs.WatchHM;
 import com.mycompany.mavenproject1.Watchs.WatchHMS;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author egorm
  */
+//@SpringBootApplication
 public class MainFrame extends javax.swing.JFrame {
 
     /**
@@ -25,6 +34,13 @@ public class MainFrame extends javax.swing.JFrame {
      */
     public MainFrame() {
         initComponents();
+
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        Transaction transaction = session.beginTransaction();
+        session.flush();
+        session.getTransaction().commit();
+        session.close();
+
         DefaultTableModel dm = new DefaultTableModel();
         dm.setDataVector(new Object[][]{{}}, new Object[]{"Watch's name", "Cost", "Hour","Minutes","Seconds"});
         jTable1.setModel(dm);
@@ -33,20 +49,30 @@ public class MainFrame extends javax.swing.JFrame {
         model.registerObserver(jTable1);
         model.notifyObserver();
         jButton1.addActionListener((a)->{
+            WatchTable watchTable = new WatchTable(Integer.parseInt(jTextField2.getText()),jTextField1.getText(), Integer.parseInt(jTextField3.getText()),Integer.parseInt(jTextField4.getText()), jTable1.getRowCount()+1);
             if(!jTextField5.getText().equals("")){
                 WatchHMS watchHMS = new WatchHMS(Integer.parseInt(jTextField2.getText()),jTextField1.getText(),Integer.parseInt(jTextField3.getText()),Integer.parseInt(jTextField4.getText()),Integer.parseInt(jTextField5.getText()));
+                watchTable.setTypeWatch(TypeWatch.WatchHMS);
+                watchTable.setSeconds(Integer.parseInt(jTextField4.getText()));
                 model.add(watchHMS);
             }
             else {
                 WatchHM watchHM = new WatchHM(Integer.parseInt(jTextField2.getText()),jTextField1.getText(),Integer.parseInt(jTextField3.getText()),Integer.parseInt(jTextField4.getText()));
+                watchTable.setTypeWatch(TypeWatch.WatchHM);
                 model.add(watchHM);
             }
+            TableRepository tableRepository = new TableRepository();
+            tableRepository.save(watchTable);
 
         });
         jButton2.addActionListener((a)->{
             int row = jTable1.getSelectedRow();
+            System.out.println(jTable1.getRowCount());
+            TableRepository tableRepository = new TableRepository();
+            tableRepository.deleteByRow(jTable1.getRowCount());
             DefaultTableModel dm1 = (DefaultTableModel) jTable1.getModel();
             dm1.removeRow(row);
+
             model.deleteRow(row);
         });
     }
@@ -208,7 +234,48 @@ public class MainFrame extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new MainFrame().setVisible(true);
+                MainFrame mainFrame = new MainFrame();
+                mainFrame.setVisible(true);
+
+                WindowListener windowListener = new WindowListener() {
+                    @Override
+                    public void windowOpened(WindowEvent e) {
+
+                    }
+
+                    @Override
+                    public void windowClosing(WindowEvent e) {
+                        TableRepository tableRepository = new TableRepository();
+                        tableRepository.dropTable();
+                    }
+
+                    @Override
+                    public void windowClosed(WindowEvent e) {
+
+                    }
+
+                    @Override
+                    public void windowIconified(WindowEvent e) {
+
+                    }
+
+                    @Override
+                    public void windowDeiconified(WindowEvent e) {
+
+                    }
+
+                    @Override
+                    public void windowActivated(WindowEvent e) {
+
+                    }
+
+                    @Override
+                    public void windowDeactivated(WindowEvent e) {
+
+                    }
+                };
+                mainFrame.addWindowListener(windowListener);
+
             }
         });
     }

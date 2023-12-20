@@ -19,9 +19,6 @@ public class Model implements Observable{
         return model;
     }
     Model(){
-        arrayList.add(new WatchHM(12, "TestEx1", 13, 59));
-        arrayList.add(new WatchHM(13, "TestEx2", 14, 58));
-        arrayList.add(new WatchHMS(14, "TestEx3", 15, 58,11));
     }
     ArrayList<Time> arrayList = new ArrayList<>();
     ArrayList<JTable> observers = new ArrayList<>();
@@ -50,6 +47,7 @@ public class Model implements Observable{
     public void notifyObserver() {
         for(JTable table1:observers) {
             Object[][] arr = new Object[arrayList.size()][5];
+            System.out.println(table1.getRowCount());
             for (int i = 0; i < arrayList.size(); ++i) {
                 String name, cost, hour, minutes, seconds;
                 WatchHM watchHM = (WatchHM) arrayList.get(i);
